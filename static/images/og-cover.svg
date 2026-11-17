@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img">
+	<defs>
+		<filter id="grain" x="0" y="0" width="100%" height="100%">
+			<feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch" />
+			<feColorMatrix type="saturate" values="0" />
+		</filter>
+		<linearGradient id="fadeBlue" x1="0" y1="0" x2="1" y2="1">
+			<stop offset="0" stop-color="#1d3fd1" stop-opacity="0.14" />
+			<stop offset="1" stop-color="#1d3fd1" stop-opacity="0" />
+		</linearGradient>
+		<linearGradient id="glowOrange" x1="0.5" y1="0" x2="0.5" y2="1">
+			<stop offset="0" stop-color="#b8410f" stop-opacity="0.55" />
+			<stop offset="1" stop-color="#b8410f" stop-opacity="0" />
+		</linearGradient>
+		<radialGradient id="sphere" cx="0.35" cy="0.28" r="0.75">
+			<stop offset="0" stop-color="#7d95ff" />
+			<stop offset="0.55" stop-color="#1d3fd1" />
+			<stop offset="1" stop-color="#0b1d78" />
+		</radialGradient>
+	</defs>
+	<rect width="1200" height="630" fill="#fcfcfa" />
+	<rect width="1200" height="630" fill="#fcfcfa" />
+		<rect x="0" y="0" width="1" height="630" fill="#e2e2dc" opacity="0.7" /><rect x="100" y="0" width="1" height="630" fill="#e2e2dc" opacity="0.7" /><rect x="200" y="0" width="1" height="630" fill="#e2e2dc" opacity="0.7" /><rect x="300" y="0" width="1" height="630" fill="#e2e2dc" opacity="0.7" /><rect x="400" y="0" width="1" height="630" fill="#e2e2dc" opacity="0.7" /><rect x="500" y="0" width="1" height="630" fill="#e2e2dc" opacity="0.7" /><rect x="600" y="0" width="1" height="630" fill="#e2e2dc" opacity="0.7" /><rect x="700" y="0" width="1" height="630" fill="#e2e2dc" opacity="0.7" /><rect x="800" y="0" width="1" height="630" fill="#e2e2dc" opacity="0.7" /><rect x="900" y="0" width="1" height="630" fill="#e2e2dc" opacity="0.7" /><rect x="1000" y="0" width="1" height="630" fill="#e2e2dc" opacity="0.7" /><rect x="1100" y="0" width="1" height="630" fill="#e2e2dc" opacity="0.7" />
+
+		<circle cx="1000" cy="150" r="180" fill="#1d3fd1" opacity="0.1" />
+		<circle cx="1000" cy="150" r="112" fill="none" stroke="#1d3fd1" stroke-opacity="0.28" />
+		<circle cx="1000" cy="150" r="54" fill="#b8410f" />
+
+		<rect x="80" y="86" width="150" height="10" fill="#1d3fd1" />
+		<rect x="80" y="112" width="90" height="7" fill="#6b6b62" opacity="0.6" />
+
+		<rect x="80" y="190" width="520" height="78" fill="#1d3fd1" />
+		<rect x="80" y="284" width="400" height="78" fill="#12120f" />
+		<rect x="80" y="378" width="260" height="78" fill="#0f766e" />
+
+		<rect x="80" y="500" width="420" height="9" fill="#e2e2dc" opacity="1" />
+		<rect x="80" y="520" width="340" height="9" fill="#e2e2dc" opacity="1" />
+
+		<circle cx="760" cy="470" r="6" fill="#0f766e" opacity="0.55" /><circle cx="794" cy="470" r="6" fill="#0f766e" opacity="0.55" /><circle cx="828" cy="470" r="6" fill="#0f766e" opacity="0.55" /><circle cx="760" cy="504" r="6" fill="#0f766e" opacity="0.55" /><circle cx="794" cy="504" r="6" fill="#0f766e" opacity="0.55" /><circle cx="828" cy="504" r="6" fill="#0f766e" opacity="0.55" />
+
+		<rect x="1080" y="510" width="40" height="40" fill="#b8410f" />
+		<rect x="1080" y="570" width="40" height="6" fill="#6b6b62" opacity="0.5" />
+	<rect width="1200" height="630" filter="url(#grain)" opacity="0.045" />
+</svg>

@@ -1,10 +1,8 @@
 import { defineEnvVars } from '@sveltejs/kit/env';
 
-// SvelteKit 3 mengganti `$env/dynamic/private` dengan cara ini.
-// Setiap variabel yang dipakai aplikasi didaftarkan di sini, sekali.
 export const variables = defineEnvVars({
 	RESEND_API_KEY: {
-		description: 'Kunci API Resend. Rahasia, hanya untuk server.',
+		description: 'Kunci API Resend untuk mengirim email.',
 		schema: (value) => value ?? ''
 	},
 	RESEND_TO: {

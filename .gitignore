@@ -24,3 +24,9 @@ vite.config.ts.timestamp-*
 
 # IDE
 .openidea/
+
+# Agents & Assets
+AGENTS.md
+ASSETS.md
+
+

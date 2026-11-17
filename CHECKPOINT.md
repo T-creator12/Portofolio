@@ -1,161 +1,131 @@
-# CP 06 — Kirim Email
+# Catatan Implementasi — Portofolio 2026
 
-Form yang benar-benar mengirim. Dan satu batas yang harus kalian hormati.
+Dokumen ini menggantikan catatan checkpoint workshop. Isinya menjelaskan **apa
+yang sudah jadi, kenapa diputuskan begitu, dan cara melanjutkannya**.
 
-## Baca ini dulu
+## Ringkasan
 
-Resend gratis **100 email per hari per akun**. Bukan per peserta — per akun.
+Satu halaman portofolio untuk tiga bidang: frontend (fokus utama), fotografi,
+dan desain poster. Identitas sudah diisi (Teofilus Charisnanta); karya masih
+contoh.
 
-Kalau kalian memakai satu akun bersama, 40 orang × 3 percobaan = 120 email, dan
-kuotanya habis sebelum separuh kelas selesai. Karena itu:
+Stack: SvelteKit 3.2 · Svelte 5.57 (runes) · TypeScript · Tailwind CSS v4.
+Tidak ada dependency runtime tambahan selain font.
 
-- **Satu akun Resend per orang.** Daftar pakai email kalian sendiri.
-- **Kirim maksimal satu email sungguhan.** Sisanya uji dengan form kosong atau
-  email yang salah format — keduanya berhenti sebelum memanggil Resend.
-- Pengirim harus `onboarding@resend.dev`. Domain kalian belum diverifikasi.
-- Penerima harus **email pemilik akun**. Resend menolak alamat lain selama
-  domain belum diverifikasi.
+## Yang berubah dari versi workshop
 
-## Apa yang berubah
+| Sebelum                                        | Sekarang                                                 |
+| ---------------------------------------------- | -------------------------------------------------------- |
+| Data di `src/lib/data.ts`                      | `src/lib/content/{types,id,en}.ts` dengan tipe bersama   |
+| Satu bahasa (Indonesia hard-coded)             | ID + EN, persistensi `localStorage`, dukungan `?lang=`   |
+| Tema hanya lewat state di `+page.svelte`       | Store tema + inline script anti-kedip di `app.html`      |
+| Proyek tampil sebagai baris                    | Grid masonry + filter kategori + modal detail `<dialog>` |
+| Form mengirim lewat Resend (`+page.server.ts`) | Form membuka `mailto:` + honeypot, tanpa server          |
+| `src/env.ts` + `.env.example`                  | Dihapus — tidak ada variabel environment yang dipakai    |
+| Gambar `.png` bawaan template                  | Cover SVG buatan sendiri + OG card PNG                   |
 
-- `src/env.ts` mendaftarkan dua variabel rahasia: `RESEND_API_KEY` dan
-  `RESEND_TO`. SvelteKit 3 tidak lagi memakai `$env/dynamic/private`.
-- `+page.server.ts` memanggil `https://api.resend.com/emails`.
-- `.env.example` jadi contoh isi `.env`. File `.env` sendiri tidak pernah ikut
-  ter-commit — `.gitignore` sudah menangani itu.
+Alasan form dibuat `mailto:`: halaman ini bisa di-deploy ke hosting statis mana
+pun tanpa API key, dan tidak ada data pengunjung yang dikirim ke server pihak
+ketiga. Konsekuensinya, pengunjung harus menekan "kirim" di aplikasi email
+mereka sendiri.
 
-Perhatikan yang **tidak** berubah di `+page.svelte`: satu baris pun tidak.
-Seluruh pekerjaan CP06 ada di server.
+## Struktur state
 
-## Salin ini
+Tiga hal yang perlu diingat saat mengubah kode:
 
-`src/env.ts`
+1. **`src/lib/i18n.svelte.ts`** — objek tunggal dengan `content` (derived dari
+   `locale`), `locale`, `init()`, `set()`, `toggle()`. Kunci penyimpanan:
+   `oots-locale`. Semua komponen membaca `i18n.content`, tidak pernah mengimpor
+   `id.ts`/`en.ts` langsung.
+2. **`src/lib/stores/theme.svelte.ts`** — `isDark`, `init()`, `toggle()`. Kunci:
+   `oots-theme`. Kelas `dark` dipasang di `<html>`, karena semua varian gelap di
+   `layout.css` memakai selector `.dark`.
+3. **`src/lib/actions/reveal.ts`** — `use:reveal` menambah `is-visible` saat
+   elemen masuk viewport. Animasi hanya aktif jika `<html class="js">`; kalau
+   JavaScript mati, konten tetap terlihat.
 
-```ts
-import { defineEnvVars } from '@sveltejs/kit/env';
+## Palet
 
-// SvelteKit 3 mengganti `$env/dynamic/private` dengan cara ini.
-// Setiap variabel yang dipakai aplikasi didaftarkan di sini, sekali.
-export const variables = defineEnvVars({
-	RESEND_API_KEY: {
-		description: 'Kunci API Resend. Rahasia, hanya untuk server.',
-		schema: (value) => value ?? ''
-	},
-	RESEND_TO: {
-		description: 'Email penerima pesan dari form kontak.',
-		schema: (value) => value ?? ''
-	}
-});
-```
+Token di `src/routes/layout.css`:
 
-`src/routes/+page.server.ts`
+| Token             | Fungsi                             |
+| ----------------- | ---------------------------------- |
+| `--accent-web`    | biru — karya dan label web         |
+| `--accent-photo`  | terracotta — fotografi             |
+| `--accent-poster` | hijau gelap — poster               |
+| `--color-primary` | warna aksi (tombol, fokus, tautan) |
 
-```ts
-import { fail } from '@sveltejs/kit';
-import { RESEND_API_KEY, RESEND_TO } from '$app/env/private';
-import type { Actions } from './$types';
+Kelas turunan (`text-accent-web`, `bg-accent-photo`, `text-success`,
+`text-danger`, dst.) dibuat lewat `@theme inline`. Menambah accent baru berarti
+menambah token di kedua blok (terang dan `.dark`) lalu mendaftarkannya di
+`@theme inline`.
 
-export const actions = {
-	kirim: async ({ request }) => {
-		const data = await request.formData();
+## Karya dan aset
 
-		const nama = String(data.get('nama') ?? '').trim();
-		const email = String(data.get('email') ?? '').trim();
-		const pesan = String(data.get('pesan') ?? '').trim();
+Sembilan karya: 4 web, 3 foto, 2 poster. Rasio cover mengikuti kategori:
 
-		if (!nama || !email || !pesan) {
-			return fail(400, { pesan: 'Semua kolom harus diisi.' });
-		}
+- web → `3/2`
+- photo → `3/2`
+- poster → `4/5`
 
-		if (!email.includes('@')) {
-			return fail(400, { pesan: 'Format email belum benar.' });
-		}
+Di modal, poster memakai `4/5`, foto `3/2`, dan web `16/9` supaya detail nyaman
+dibaca. `MediaFrame` menampilkan gradien + label sebagai fallback kalau gambar
+gagal dimuat, jadi layout tidak pernah rusak. Subjek foto orang sengaja
+memakai siluet dari belakang tanpa wajah yang dikenali.
 
-		const kunci = RESEND_API_KEY;
-		const tujuan = RESEND_TO;
+Gambar dibuat lewat `scripts/generate-placeholders.mjs`. Generator AI gambar
+tidak tersedia saat pengerjaan (kredensial provider ditolak), jadi semua cover
+berupa SVG geometris dengan palet yang sama. Semua file bisa diganti gambar
+asli tanpa mengubah kode — lihat [`ASSETS.md`](./ASSETS.md).
 
-		if (!kunci || !tujuan) {
-			return fail(500, { pesan: 'Kunci Resend belum dipasang di .env.' });
-		}
+## Form kontak
 
-		const balasan = await fetch('https://api.resend.com/emails', {
-			method: 'POST',
-			headers: {
-				Authorization: `Bearer ${kunci}`,
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				// Resend hanya mengizinkan pengirim ini selama domain kalian
-				// belum diverifikasi.
-				from: 'Portofolio <onboarding@resend.dev>',
-				to: [tujuan],
-				reply_to: email,
-				subject: `Pesan dari ${nama}`,
-				text: `${pesan}\n\n— ${nama} <${email}>`
-			})
-		});
+Alur di `Contact.svelte`:
 
-		if (!balasan.ok) {
-			console.error('Resend menolak:', balasan.status, await balasan.text());
-			return fail(502, { pesan: 'Gagal mengirim. Coba lagi.' });
-		}
+1. Validasi nama, email (regex sederhana), dan pesan di klien.
+2. Cek honeypot (`website`) — kalau terisi, berhenti tanpa pesan error.
+3. Susun `mailto:` berisi subjek dan body, lalu set `window.location.href`.
+4. Tampilkan status "Membuka email…" lalu pesan sukses.
 
-		return { sukses: true };
-	}
-} satisfies Actions;
-```
+Tidak ada request jaringan. Kalau nanti ingin pengiriman sungguhan, tambahkan
+endpoint (`src/routes/api/contact/+server.ts`) atau form action, lalu ganti
+bagian `window.location.href` dengan `fetch`.
 
-`.env.example`
+## SEO
 
-```
-# Salin file ini jadi .env, lalu isi nilainya.
-# Jangan pernah commit .env — isinya kunci rahasia.
+`+page.svelte` memuat title, description, Open Graph, dan Twitter Card.
+`og:image` menunjuk ke `/images/og-cover.png` (1200×630) karena sebagian besar
+platform tidak merender SVG untuk pratinjau. `app.html` mengatur `lang`
+default; i18n memperbarui `document.documentElement.lang` saat bahasa berganti.
 
-# https://resend.com/api-keys
-RESEND_API_KEY=re_xxxxxxxxxxxxxxxx
-
-# Selama domain kalian belum diverifikasi di Resend, email hanya bisa
-# dikirim ke alamat pemilik akun. Isi dengan email kalian sendiri.
-RESEND_TO=kamu@email.com
-```
-
-Lalu buat `.env` sendiri:
-
-```sh
-cp .env.example .env
-```
-
-Isi `RESEND_API_KEY` dari dashboard Resend, dan `RESEND_TO` dengan email kalian.
-
-## Bandingkan
-
-/compare/05-form...06-resend
-
-## Tantangan
-
-Kirim satu email sungguhan ke diri sendiri. Buka inbox, lalu tekan **Reply**.
-Email balasan itu harus masuk ke alamat pengirim form, bukan ke
-`onboarding@resend.dev`. Itu kerja `reply_to`.
-
-## Kalau macet
-
-| Gejala                                                           | Sebab                                                     |
-| ---------------------------------------------------------------- | --------------------------------------------------------- |
-| `401 API key is invalid`                                         | Kunci salah salin, atau ada spasi di akhir baris `.env`   |
-| `403 You can only send testing emails to your own email address` | `RESEND_TO` bukan email pemilik akun Resend               |
-| `Kunci Resend belum dipasang di .env`                            | `.env` belum dibuat, atau dev server belum di-restart     |
-| Email tidak masuk tapi status hijau                              | Cek folder Spam. Lalu cek dashboard Resend → Logs         |
-| Status hijau padahal tidak ada email                             | Kunci masih kosong tapi pengecekan `if (!kunci)` terhapus |
-
-Setiap penolakan Resend dicatat di terminal tempat `bun run dev` berjalan —
-lengkap dengan kode status dan alasannya. Baca terminal, bukan cuma browser.
+JSON-LD `Person` sempat ditambahkan lalu dicabut: menyuntikkannya lewat
+`{@html}` memicu peringatan XSS dari autofixer, dan manfaatnya kecil untuk
+halaman satu ini. Kalau dibutuhkan lagi, lebih aman memasukkannya sebagai
+`<script type="application/ld+json">` statis di `app.html`.
 
 ## Verifikasi
 
 ```sh
-bun run check
-bun run dev
+bun run check    # 0 error, 0 warning
+bun run build    # build produksi
+bun run dev      # cek manual: tema, bahasa, filter, modal, form
 ```
 
-Kirim satu pesan. Status hijau, dan email masuk ke inbox kalian dalam beberapa
-detik. Kalau status merah, lihat terminal: pesan Resend ada di sana.
+Checklist manual yang disarankan setelah mengubah UI:
+
+- [ ] Muat ulang dalam mode gelap: tidak ada kedipan putih.
+- [ ] Ganti bahasa, muat ulang: pilihan bertahan.
+- [ ] Buka `/?lang=en`: langsung bahasa Inggris.
+- [ ] Filter karya, buka modal, tekan Esc, klik backdrop.
+- [ ] Tab dari awal halaman: skip link muncul lebih dulu.
+- [ ] Kecilkan lebar ke 360px: tidak ada scroll horizontal.
+- [ ] Aktifkan "reduce motion": tidak ada animasi masuk.
+
+## Sisa pekerjaan yang wajar
+
+- Ganti seluruh konten contoh dengan data asli.
+- Ganti cover SVG dengan tangkapan layar/foto/poster asli.
+- Isi `href` pada tautan sosial.
+- Tambahkan `sitemap.xml` dan `robots.txt` final (saat ini `robots.txt` masih
+  bawaan template).
+- Pasang adapter deploy yang sesuai di `vite.config.ts`.
