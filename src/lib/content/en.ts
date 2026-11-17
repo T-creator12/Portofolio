@@ -524,7 +524,7 @@ export const en: Content = {
 		email: 'teofiluscharis@gmail.com',
 		socials: [
 			{ label: 'GitHub', handle: '@T-creator12', href: 'https://github.com/T-creator12' },
-			{ label: 'Instagram', handle: '@teofiluscharis', href: 'https://www.instagram.com/teo_aja_dah/' },
+			{ label: 'Instagram', handle: '@teo_aja_dah', href: 'https://www.instagram.com/teo_aja_dah/' }
 		]
 	},
 	footer: {
